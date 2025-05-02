@@ -323,7 +323,7 @@ export default function CoffeeShopApp() {
                 className="absolute top-1 right-1 text-[#3e2f23] hover:text-red-600 transition-colors"
                 aria-label="Delete task"
               >
-                <X size={14} />
+                
               </button>
 
               <h3 className="text-[#3e2f23] font-bold mb-2 pr-4">{task.text}</h3>
@@ -347,7 +347,7 @@ export default function CoffeeShopApp() {
                       className="ml-auto text-[#3e2f23] hover:text-red-600 transition-colors"
                       aria-label="Delete item"
                     >
-                      <X size={12} />
+                      <X size={15} />
                     </button>
                   </li>
                 ))}
