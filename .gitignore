@@ -1,0 +1,42 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/.next
+/out
+
+# debug log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# vercel
+.vercel
+
+# misc
+.DS_Store
+*.pem
+*.log
+
+# vscode settings
+.vscode/
+
+# next export artifacts
+export/
+
+# optional: if using Tailwind JIT cache
+/.tailwindcache
+
+# optional: if using TypeScript
+*.tsbuildinfo
