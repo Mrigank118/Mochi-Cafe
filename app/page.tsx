@@ -418,6 +418,16 @@ export default function CoffeeShopApp() {
           </div>
         </div>
 
+        {/* Timer Display */}
+        <div className="bg-[#f4ecd8] p-3 rounded-md shadow-md mt-6">
+          <div className="text-[#3e2f23] font-bold mb-2">Coming Soon</div>
+          <br>
+          </br>
+          
+        </div>
+
+        
+
 
       </div>
 
@@ -482,7 +492,7 @@ export default function CoffeeShopApp() {
             {/* Dialogue Box */}
             {showDialogue && (
               <div className="relative flex items-end">
-                <div className="mb-4 w-[90vw] max-w-2xl bg-[#3e2f23] border-4 border-[#deb887] p-4 rounded-lg z-10">
+                <div className="mb-4 w-[91vw] max-w-2xl bg-[#3e2f23] border-4 border-[#deb887] p-4 rounded-lg z-10">
                   <p className="text-[#f4ecd8] text-sm leading-relaxed">
                     {displayedDialogue}
                     {dialogueIndex >= dialogue.length && (
@@ -535,7 +545,7 @@ export default function CoffeeShopApp() {
                 </div>
 
                 {/* Mochi Character to the Right */}
-                <div className="ml-[-60px] mb-1 w-56 h-60 relative z-20">
+                <div className="ml-[-60px] -mb-3 w-56 h-60 relative z-20">
                   <Image
                     src="/images/mochi.png"
                     alt="Mochi the café owner"
