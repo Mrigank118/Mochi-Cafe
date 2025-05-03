@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect, useRef } from "react"
 import { Coffee, CloudRain, Music, Users, Play, Pause, RotateCcw, X, Check, Plus } from "lucide-react"
 import Image from "next/image"
@@ -22,11 +24,27 @@ export default function CoffeeShopApp() {
   const [sounds, setSounds] = useState({
     coffee: false,
     rain: false,
-    jazz: false,
+    bird: false,
     crowd: false,
   })
 
+  // Sound references
+  const coffeeSoundRef = useRef<HTMLAudioElement | null>(null)
+  const rainSoundRef = useRef<HTMLAudioElement | null>(null)
+  const birdSoundRef = useRef<HTMLAudioElement | null>(null)
+  const crowdSoundRef = useRef<HTMLAudioElement | null>(null)
+  const mochiEnterSoundRef = useRef<HTMLAudioElement | null>(null)
+  const textSoundRef = useRef<HTMLAudioElement | null>(null)
 
+  // Sound availability state
+  const [soundsLoaded, setSoundsLoaded] = useState({
+    coffee: false,
+    rain: false,
+    bird: false,
+    crowd: false,
+    mochiEnter: false,
+    text: false,
+  })
 
   // Tasks state
   const [tasks, setTasks] = useState<
@@ -63,6 +81,33 @@ export default function CoffeeShopApp() {
   const [studyTime, setStudyTime] = useState(0)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Safe play function that won't crash if audio isn't available
+  const safePlayAudio = (audioRef: React.RefObject<HTMLAudioElement>) => {
+    if (audioRef.current) {
+      // Create a promise that resolves when the audio plays or rejects on error
+      const playPromise = audioRef.current.play()
+
+      // If the promise exists (modern browsers), handle potential errors
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          // Silently handle the error - audio will just not play
+          console.log("Audio not available yet:", error)
+        })
+      }
+    }
+  }
+
+  // Safe pause function
+  const safePauseAudio = (audioRef: React.RefObject<HTMLAudioElement>) => {
+    if (audioRef.current) {
+      try {
+        audioRef.current.pause()
+      } catch (error) {
+        console.log("Could not pause audio:", error)
+      }
+    }
+  }
+
   // Handle intro progression
   useEffect(() => {
     if (showIntro) {
@@ -76,6 +121,28 @@ export default function CoffeeShopApp() {
       const timer = setTimeout(() => {
         setDisplayedDialogue((prev) => prev + dialogue[dialogueIndex])
         setDialogueIndex((prev) => prev + 1)
+
+        // Play text sound occasionally (every 4 characters)
+        if (dialogueIndex % 4 === 0) {
+          // Only try to play if we have a text sound
+          if (textSoundRef.current) {
+            try {
+              // Clone the audio node to allow overlapping sounds
+              const soundClone = textSoundRef.current.cloneNode() as HTMLAudioElement
+              soundClone.volume = 0.1 // Lower volume for text sounds
+
+              // Play but don't crash if it fails
+              const playPromise = soundClone.play()
+              if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                  // Silently fail - text will still appear without sound
+                })
+              }
+            } catch (err) {
+              // Silently fail - text will still appear without sound
+            }
+          }
+        }
       }, 50)
       return () => clearTimeout(timer)
     } else {
@@ -120,6 +187,11 @@ export default function CoffeeShopApp() {
     setShowDialogue(true)
     setMochiVisible(true)
 
+    // Play Mochi enter sound if not already visible
+    if (!mochiVisible) {
+      safePlayAudio(mochiEnterSoundRef)
+    }
+
     // Animate Mochi rising from bottom
     if (mochiRef.current) {
       mochiRef.current.style.transform = "translateY(0)"
@@ -145,12 +217,26 @@ export default function CoffeeShopApp() {
   const toggleSound = (sound: keyof typeof sounds) => {
     setSounds((prev) => ({ ...prev, [sound]: !prev[sound] }))
 
+    // Play or pause the sound
+    const soundRefs = {
+      coffee: coffeeSoundRef,
+      rain: rainSoundRef,
+      bird: birdSoundRef,
+      crowd: crowdSoundRef,
+    }
+
+    const soundRef = soundRefs[sound]
+    if (!sounds[sound]) {
+      safePlayAudio(soundRef)
+    } else {
+      safePauseAudio(soundRef)
+    }
+
     // Show dialogue based on sound toggle
     const messages = {
-
       coffee: "Ah, the sound of coffee brewing... reminds me of the good ol' days! *inhales deeply*",
       rain: "Rain, eh? My joints can predict rain better than any weatherman! *rubs knee*",
-      jazz: "Jazz music? In my day, we called it 'devil's music'! *winks* Just kidding, youngster!",
+      bird: "birds? In my day, we called it 'devil's music'! *winks* Just kidding, youngster!",
       crowd: "The murmur of customers... music to these old ears! Business is brewing! *chuckles*",
     }
 
@@ -285,6 +371,53 @@ export default function CoffeeShopApp() {
     showNewDialogue("Starting fresh! As I always say, 'Yesterday's grounds don't make today's coffee!'")
   }
 
+  // Trigger intro on page load
+  useEffect(() => {
+    if (showIntro) {
+      // Small delay to ensure everything is loaded
+      const timer = setTimeout(() => {
+        showNewDialogue(introDialogues[introStep])
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, []) // Empty dependency array means this runs once on mount
+
+  // Check if audio files are loaded
+  useEffect(() => {
+    // Function to check if an audio element can play
+    const checkAudioLoaded = (audioRef: React.RefObject<HTMLAudioElement>, key: keyof typeof soundsLoaded) => {
+      if (audioRef.current) {
+        const handleCanPlay = () => {
+          setSoundsLoaded((prev) => ({ ...prev, [key]: true }))
+        }
+
+        audioRef.current.addEventListener("canplaythrough", handleCanPlay)
+
+        // Clean up
+        return () => {
+          if (audioRef.current) {
+            audioRef.current.removeEventListener("canplaythrough", handleCanPlay)
+          }
+        }
+      }
+    }
+
+    // Set up listeners for all audio elements
+    const cleanupFunctions = [
+      checkAudioLoaded(coffeeSoundRef, "coffee"),
+      checkAudioLoaded(rainSoundRef, "rain"),
+      checkAudioLoaded(birdSoundRef, "bird"),
+      checkAudioLoaded(crowdSoundRef, "crowd"),
+      checkAudioLoaded(mochiEnterSoundRef, "mochiEnter"),
+      checkAudioLoaded(textSoundRef, "text"),
+    ]
+
+    // Clean up all listeners
+    return () => {
+      cleanupFunctions.forEach((cleanup) => cleanup && cleanup())
+    }
+  }, [])
+
   return (
     <main className="relative h-screen w-screen overflow-hidden font-pixel text-white">
       {/* Background with lighter overlay */}
@@ -322,9 +455,7 @@ export default function CoffeeShopApp() {
                 onClick={() => deleteTask(task.id)}
                 className="absolute top-1 right-1 text-[#3e2f23] hover:text-red-600 transition-colors"
                 aria-label="Delete task"
-              >
-                
-              </button>
+              ></button>
 
               <h3 className="text-[#3e2f23] font-bold mb-2 pr-4">{task.text}</h3>
 
@@ -420,18 +551,20 @@ export default function CoffeeShopApp() {
 
         {/* Timer Display */}
         <div className="bg-[#f4ecd8] p-3 rounded-md shadow-md mt-6">
-          <div className="text-[#3e2f23] font-bold mb-2">Coming Soon</div>
-          <br>
-          </br>
-          
+          <div className="text-[#3e2f23] font-bold mb-2">Ghibli Lofi</div>
+          <div className="aspect-video w-full">
+    <iframe
+      className="w-full h-full rounded-md"
+      src="https://www.youtube.com/embed/zhDwjnYZiCo?si=wANhBiByWv7SJcuF"
+      title="YouTube video player"
+      frameBorder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerPolicy="strict-origin-when-cross-origin"
+      allowFullScreen
+    ></iframe>
+  </div>
         </div>
-
-        
-
-
       </div>
-
-
 
       {/* Sound Controls (Right Side) */}
       <div className="absolute top-4 right-4 z-10 bg-[#3e2f23] bg-opacity-80 p-3 rounded-lg border-2 border-[#deb887]">
@@ -447,7 +580,7 @@ export default function CoffeeShopApp() {
           >
             <Coffee size={20} />
           </button>
-          
+
           <button
             onClick={() => toggleSound("rain")}
             className={cn(
@@ -459,12 +592,12 @@ export default function CoffeeShopApp() {
             <CloudRain size={20} />
           </button>
           <button
-            onClick={() => toggleSound("jazz")}
+            onClick={() => toggleSound("bird")}
             className={cn(
               "p-2 rounded-md transition-all duration-300",
-              sounds.jazz ? "bg-[#a6754f] text-white" : "bg-[#f4ecd8] text-[#3e2f23]",
+              sounds.bird ? "bg-[#a6754f] text-white" : "bg-[#f4ecd8] text-[#3e2f23]",
             )}
-            aria-label="Toggle jazz music"
+            aria-label="Toggle bird music"
           >
             <Music size={20} />
           </button>
@@ -495,9 +628,7 @@ export default function CoffeeShopApp() {
                 <div className="mb-4 w-[91vw] max-w-2xl bg-[#3e2f23] border-4 border-[#deb887] p-4 rounded-lg z-10">
                   <p className="text-[#f4ecd8] text-sm leading-relaxed">
                     {displayedDialogue}
-                    {dialogueIndex >= dialogue.length && (
-                      <span className="inline-block animate-pulse ml-1">▶</span>
-                    )}
+                    {dialogueIndex >= dialogue.length && <span className="inline-block animate-pulse ml-1">▶</span>}
                   </p>
 
                   {/* Response Options */}
@@ -560,6 +691,21 @@ export default function CoffeeShopApp() {
         </div>
       )}
 
+      {/* Audio Elements - commented out until you add the actual files */}
+      {/* These are commented out to prevent errors, uncomment when you add the actual sound files */}
+      {/* Uncomment these when actual sound files are added */}
+      <>
+        <audio ref={rainSoundRef} src="./sounds/rain.mp3" loop preload="none" />
+        <audio ref={coffeeSoundRef} src="./sounds/coffee.mp3" loop preload="none" />
+        <audio ref={birdSoundRef} src="./sounds/birds.mp3" loop preload="none" />
+        
+        {/* 
+  <audio ref={textSoundRef} src="./sounds/text-sound.mp3" preload="none" />
+  <audio ref={crowdSoundRef} src="./sounds/crowd.mp3" loop preload="none" />
+  <audio ref={mochiEnterSoundRef} src="./sounds/mochi-enter.mp3" preload="none" />
+  
+  */}
+      </>
 
     </main>
   )
