@@ -6,7 +6,7 @@ Welcome to **Mochi's Cozy Café**, a pixel-art themed productivity app that blen
 
 ## ✨ Features
 
-- 🎵 **Ambient Sounds**: Toggle cozy café sounds — rain, jazz, coffee machine, and more.
+- 🎵 **Ambient Sounds**: Toggle cozy café sounds — rain, Bird, coffee machine, and more.
 - 🎮 **Pixel-Art Aesthetic**: Beautiful retro-style café visuals with looping background GIFs.
 - 💬 **Undertale-style Dialogue**: Mochi will randomly talk to you with a funny text box and optional replies.
 - 📋 **Sticky Note Tasks**: Manage your to-dos using a paper-style task board with checklists.

@@ -4,7 +4,7 @@ import type { Metadata } from "next"
 import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
-  title: "Mochi Café - Cozy Productivity App",
+  title: "Mochi Café",
   description: "A cozy coffee shop-themed productivity web app with pixel-art aesthetic",
     generator: 'v0.dev'
 }
