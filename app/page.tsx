@@ -553,16 +553,16 @@ export default function CoffeeShopApp() {
         <div className="bg-[#f4ecd8] p-3 rounded-md shadow-md mt-6">
           <div className="text-[#3e2f23] font-bold mb-2">Ghibli Lofi</div>
           <div className="aspect-video w-full">
-    <iframe
-      className="w-full h-full rounded-md"
-      src="https://www.youtube.com/embed/zhDwjnYZiCo?si=wANhBiByWv7SJcuF"
-      title="YouTube video player"
-      frameBorder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      referrerPolicy="strict-origin-when-cross-origin"
-      allowFullScreen
-    ></iframe>
-  </div>
+            <iframe
+              className="w-full h-full rounded-md"
+              src="https://www.youtube.com/embed/zhDwjnYZiCo?si=wANhBiByWv7SJcuF"
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            ></iframe>
+          </div>
         </div>
       </div>
 
@@ -698,7 +698,7 @@ export default function CoffeeShopApp() {
         <audio ref={rainSoundRef} src="./sounds/rain.mp3" loop preload="none" />
         <audio ref={coffeeSoundRef} src="./sounds/coffee.mp3" loop preload="none" />
         <audio ref={birdSoundRef} src="./sounds/birds.mp3" loop preload="none" />
-        
+
         {/* 
   <audio ref={textSoundRef} src="./sounds/text-sound.mp3" preload="none" />
   <audio ref={crowdSoundRef} src="./sounds/crowd.mp3" loop preload="none" />
