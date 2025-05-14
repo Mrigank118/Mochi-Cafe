@@ -31,6 +31,8 @@ import {
   SkipForward,
   Minimize,
   Maximize,
+  BookMarked,
+  Sparkles,
 } from "lucide-react"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
@@ -91,10 +93,7 @@ function RetroTV() {
     "AoIaElLldhM", // FULL EPISODE: Haunted | Teen Titans | Cartoon Network
     "9rYSU8rm2Yg", // Shinchan Vs Butta | Full Series
     "5proeqlmHII", // Doraemon: Episode 15
-  ];
-
-
-
+  ]
 
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [isTvOn, setIsTvOn] = useState(true)
@@ -253,6 +252,32 @@ export default function CoffeeShopApp() {
     "The kids these days with their beep-boop machines... *sighs* Well, enjoy your coffee, youngster!",
   ]
 
+  // TV-related dialogues
+  const tvDialogues = [
+    "Oh, you're turning on the television? In my day, we had to entertain ourselves with shadow puppets! *wiggles fingers*",
+    "Changing the channel, eh? When I was your age, we had three channels, and two of them were static! *laughs*",
+    "Turning off the TV? Good choice! Nothing beats a good book and the smell of fresh coffee! *nods approvingly*",
+    "Full screen? My, my, aren't we fancy! Just don't sit too close or you'll hurt your eyes! *wags finger*",
+    "These cartoons remind me of when I was knee-high to a grasshopper! *adjusts glasses nostalgically*",
+  ]
+
+  // Mochi's folk stories
+  const mochiStories = [
+    "Back in '52, I caught a fish THIS big! *stretches arms wide* The whole village ate for a week! 'Course, the story gets bigger every time I tell it! *winks*",
+    "When I was just a kitten, I once chased a mouse through Mrs. Whiskers' garden. Knocked over her prize petunias! Had to help replant the whole garden! *laughs wheezily*",
+    "Did I ever tell you about the Great Blizzard of '68? Snow piled higher than the roof! Had to tunnel my way to the coffee beans! Made the best hot chocolate that day! *nods proudly*",
+    "My first coffee shop was no bigger than a broom closet! But we had CHARM! *gestures dramatically* Folks would line up around the block just for a sip of Mochi's special brew!",
+    "Once met a traveling salesman who claimed his coffee beans were magical. Turned out they were just painted nuts! *slaps knee* Taught me to always check what I'm buying! *taps temple*",
+    "During the summer of '75, it was so hot the roads melted! I served nothing but iced coffee for three months straight! My paws got so cold I had to wear mittens! *shivers comically*",
+    "My grandmother taught me to read coffee grounds. Once told a customer they'd meet someone special. Next day, they bumped into their childhood sweetheart! *nods knowingly* The grounds never lie!",
+    "Used to have a parrot in the old shop. That bird could mimic any customer's order! *imitates squawking* 'One espresso, extra hot!' Scared the whiskers off new customers! *chuckles*",
+    "During the power outage of '82, I brewed coffee using an old camping stove. Place was lit with candles! Most romantic atmosphere we ever had! Three couples got engaged that night! *sighs happily*",
+    "My secret ingredient? A pinch of cinnamon and a whole lotta love! *pats chest* That's how we did it in the old days, before all these fancy machines and whatnot!",
+  ]
+
+  // Current Mochi story
+  const [currentStoryIndex, setCurrentStoryIndex] = useState(0)
+
   // Sound controls state
   const [sounds, setSounds] = useState({
     coffee: false,
@@ -383,6 +408,17 @@ export default function CoffeeShopApp() {
       image: "/images/coffee-affogato.png",
     },
   })
+
+  // Get a new random story
+  const getNewStory = () => {
+    let newIndex = Math.floor(Math.random() * mochiStories.length)
+    // Make sure we don't get the same story twice in a row
+    while (newIndex === currentStoryIndex) {
+      newIndex = Math.floor(Math.random() * mochiStories.length)
+    }
+    setCurrentStoryIndex(newIndex)
+    showNewDialogue(mochiStories[newIndex])
+  }
 
   // Safe play function that won't crash if audio isn't available
   const safePlayAudio = (audioRef: React.RefObject<HTMLAudioElement>) => {
@@ -608,16 +644,16 @@ export default function CoffeeShopApp() {
         prev.map((task) =>
           task.id === taskId
             ? {
-              ...task,
-              items: [
-                ...task.items,
-                {
-                  id: `${taskId}-${Date.now()}`,
-                  text: newItemText,
-                  completed: false,
-                },
-              ],
-            }
+                ...task,
+                items: [
+                  ...task.items,
+                  {
+                    id: `${taskId}-${Date.now()}`,
+                    text: newItemText,
+                    completed: false,
+                  },
+                ],
+              }
             : task,
         ),
       )
@@ -633,9 +669,9 @@ export default function CoffeeShopApp() {
       prev.map((task) =>
         task.id === taskId
           ? {
-            ...task,
-            items: task.items.map((item) => (item.id === itemId ? { ...item, completed: !item.completed } : item)),
-          }
+              ...task,
+              items: task.items.map((item) => (item.id === itemId ? { ...item, completed: !item.completed } : item)),
+            }
           : task,
       ),
     )
@@ -655,9 +691,9 @@ export default function CoffeeShopApp() {
       prev.map((task) =>
         task.id === taskId
           ? {
-            ...task,
-            items: task.items.filter((item) => item.id !== itemId),
-          }
+              ...task,
+              items: task.items.filter((item) => item.id !== itemId),
+            }
           : task,
       ),
     )
@@ -689,7 +725,23 @@ export default function CoffeeShopApp() {
       case "Ok":
         hideDialogue()
         break
+      case "Another Story":
+        getNewStory()
+        break
     }
+  }
+
+  // TV control handlers with Mochi dialogues
+  const handleTvPower = (isOn: boolean) => {
+    showNewDialogue(isOn ? tvDialogues[0] : tvDialogues[2])
+  }
+
+  const handleChannelChange = () => {
+    showNewDialogue(tvDialogues[1])
+  }
+
+  const handleFullscreen = (isFullscreen: boolean) => {
+    showNewDialogue(tvDialogues[3])
   }
 
   // Timer controls
@@ -863,15 +915,13 @@ export default function CoffeeShopApp() {
 
       {/* Main Content Area - Responsive Grid */}
       <div className="relative z-10 container mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-12 gap-6">
-
         {/* Task Board (Left Side on Desktop, Tab on Mobile) */}
         <div
           className={cn(
-            "md:col-span-5 lg:col-span-4 bg-[#3e2f23] bg-opacity-90 p-4 rounded-lg border-2 border-[#deb887] overflow-y-auto max-h-[calc(100vh-180px)] md:block",
+            "md:col-span-4 bg-[#3e2f23] bg-opacity-90 p-4 rounded-lg border-2 border-[#deb887] md:block h-full",
             activeTab !== "tasks" && "hidden md:block",
           )}
         >
-
           {/* Television */}
           <div className="text-lg mb-4 text-[#f4ecd8] font-semibold flex items-center">
             <Tv className="mr-2" size={18} />
@@ -879,7 +929,7 @@ export default function CoffeeShopApp() {
           </div>
           <RetroTV />
 
-          <div className="text-lg mb-4 text-[#f4ecd8] font-semibold flex items-center">
+          <div className="text-lg mt-6 mb-4 text-[#f4ecd8] font-semibold flex items-center">
             <BookOpen className="mr-2" size={18} />
             TASKS
           </div>
@@ -902,7 +952,7 @@ export default function CoffeeShopApp() {
           </div>
 
           {/* Task list */}
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-500px)] md:max-h-[calc(100vh-400px)]">
             {tasks.map((task) => (
               <div key={task.id} className="bg-[#f4ecd8] p-3 rounded-md shadow-md relative">
                 <button
@@ -976,13 +1026,10 @@ export default function CoffeeShopApp() {
               </div>
             ))}
           </div>
-
         </div>
 
         {/* Middle Section - Timer and YouTube (Center on Desktop, Tab on Mobile) */}
-        <div
-          className={cn("md:col-span-7 lg:col-span-4 space-y-6 md:block", activeTab !== "timer" && "hidden md:block")}
-        >
+        <div className={cn("md:col-span-4 space-y-6 md:block h-full", activeTab !== "timer" && "hidden md:block")}>
           {/* Timer Display */}
           <div className="bg-[#3e2f23] bg-opacity-90 p-4 rounded-lg border-2 border-[#deb887]">
             <div className="text-lg mb-4 text-[#f4ecd8] font-semibold flex items-center">
@@ -1024,7 +1071,6 @@ export default function CoffeeShopApp() {
               </div>
             )}
           </div>
-
 
           {/* Coffee Shelf / Trophy System */}
           <div
@@ -1080,11 +1126,10 @@ export default function CoffeeShopApp() {
               </div>
             </div>
           </div>
-
         </div>
 
-        {/* Right Section - Sound Controls and Coffee Shelf (Right on Desktop, Tabs on Mobile) */}
-        <div className="md:col-span-10 lg:col-span-4 space-y-6">
+        {/* Right Section - Sound Controls and Mochi Stories */}
+        <div className="md:col-span-4 space-y-6 h-full">
           {/* Sound Controls */}
           <div
             className={cn(
@@ -1243,10 +1288,33 @@ export default function CoffeeShopApp() {
             </div>
           </div>
 
+          {/* Mochi Stories Section */}
+          <div className="bg-[#3e2f23] bg-opacity-90 p-4 rounded-lg border-2 border-[#deb887]">
+            <div className="text-lg mb-4 text-[#f4ecd8] font-semibold flex items-center">
+              <BookMarked className="mr-2" size={18} />
+              MOCHI STORIES
+            </div>
+
+            <div className="bg-[#f4ecd8] p-4 rounded-md text-[#3e2f23] relative">
+              <div className="absolute -top-2 -left-2 bg-[#a6754f] rounded-full p-2">
+                <Sparkles size={16} className="text-white" />
+              </div>
+
+              <p className="text-sm mb-2 pt-2">{mochiStories[currentStoryIndex]}</p>
+              <div className="flex justify-end">
+                <button
+                  onClick={getNewStory}
+                  className="bg-[#a6754f] text-white px-3 py-1 rounded-md text-xs flex items-center gap-1 hover:bg-[#8c5e3d] transition-colors mt-2"
+                >
+                  Another Story
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Mochi Character - Always Visible */}
+      {/* Mochi Character - Always Visible but smaller on mobile */}
       {mochiVisible && (
         <div
           ref={mochiRef}
@@ -1258,7 +1326,7 @@ export default function CoffeeShopApp() {
             {/* Dialogue Box */}
             {showDialogue && (
               <div className="relative flex items-end">
-                <div className="mb-4 w-[91vw] max-w-md bg-[#3e2f23] border-4 border-[#deb887] p-4 rounded-lg z-10">
+                <div className="mb-4 w-[80vw] max-w-md bg-[#3e2f23] border-4 border-[#deb887] p-4 rounded-lg z-10">
                   <p className="text-[#f4ecd8] text-sm leading-relaxed font-sans">
                     {displayedDialogue}
                     {dialogueIndex >= dialogue.length && <span className="inline-block animate-pulse ml-1">▶</span>}
@@ -1302,20 +1370,26 @@ export default function CoffeeShopApp() {
                           >
                             Ok
                           </button>
+                          <button
+                            onClick={() => handleResponse("Another Story")}
+                            className="bg-[#3e2f23] border-2 border-[#deb887] px-4 py-1 rounded-md text-sm hover:bg-[#a6754f] transition-colors"
+                          >
+                            Another Story
+                          </button>
                         </>
                       )}
                     </div>
                   )}
                 </div>
 
-                {/* Mochi Character */}
-                <div className="ml-[-60px] -mb-3 w-56 h-60 relative z-20">
+                {/* Mochi Character - Smaller on mobile */}
+                <div className="ml-[-40px] md:ml-[-60px] -mb-3 w-40 md:w-56 h-40 md:h-60 relative z-20">
                   <Image
                     src="/images/mochi.png"
                     alt="Mochi the café owner"
-                    width={224}
-                    height={224}
-                    className="object-contain scale-x-[-1]"
+                    width={160}
+                    height={160}
+                    className="object-contain scale-x-[-1] w-full h-full"
                   />
                 </div>
               </div>
